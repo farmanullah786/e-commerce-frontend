@@ -31,8 +31,8 @@ const Orders = () => {
           <div
             className={`${
               isLogged?.is_staff
-                ? "col-lg-4 col-md-6 col-sm-8 col-xl-4"
-                : "col-lg-6 col-md-6 col-sm-6 col-xl-6"
+                ? "col-lg-4 col-md-6 col-sm-12 col-xl-4"
+                : "col-lg-6 col-md-6 col-sm-12 col-xl-6"
             }`}
           >
             <div className="card overflow-hidden">

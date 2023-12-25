@@ -471,9 +471,29 @@ ul[role="navigation"] li.next.disabled a {
   .left-menu .slide .side-menu__item .side-menu__label,
   .right-menu .slide .side-menu__item .side-menu__label {
     color: #ffff !important;
-    font-size: 15px!important;
+    font-size: 13px!important;
+  }
+  .left-menu {
+    margin-inline: 5px;
+  }
+  .right-menu {
+    margin-inline: 0px;
+  }
+  .right-menu img{
+    margin-top: 4px;
   }
   .footer-bottom{
     padding: 10px!important;
+  }
+  .my-log{
+    width: 100%;
+    margin: auto!important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .cart-badge{
+    font-weight: bold;
+    font-size: 10px;
   }
 }

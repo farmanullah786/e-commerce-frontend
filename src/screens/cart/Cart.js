@@ -50,7 +50,7 @@ const Cart = () => {
     <AppLayout>
       {cartItems?.length > 0 ? (
         <div className="row carts">
-          <div className="col-lg-8 col-md-8 col-sm-8 col-xl-8">
+          <div className="col-lg-8 col-md-8 col-sm-12 col-xl-8">
             <div className="card overflow-hidden">
               <div className="card-header cart-header">
                 <div>

@@ -22,7 +22,7 @@ const Product = () => {
   return (
     <AppLayout>
       <div className="row products">
-        <div className="col-lg-3 col-md-4 col-sm-6 col-xl-3">
+        <div className="col-lg-3 col-md-4 col-sm-12 col-xl-3">
           <div className="card overflow-hidden">
             <header className="card__header">
               <h1 className="product__title">{product.title}</h1>

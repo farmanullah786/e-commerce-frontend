@@ -24,7 +24,7 @@ const OrderItems = () => {
           {orderData?.product?.map((product) => (
             <div
               key={product.id}
-              className={`col-lg-3 col-md-6 col-sm-6 col-xl-3`}
+              className={`col-lg-3 col-md-6 col-sm-12 col-xl-3`}
             >
               <div className="card overflow-hidden">
                 <header className="card__header">

@@ -19,7 +19,7 @@ const Profile = () => {
   return (
     <AppLayout>
       <div className="row products fw-bold">
-        <div className="col-lg-3 col-md-4 col-sm-6 col-xl-3">
+        <div className="col-lg-3 col-md-4 col-sm-12 col-xl-3">
           <div className="card overflow-hidden">
             <header className="card__header">
               <h1 className="product__title">{isLogged?.name}</h1>
@@ -27,7 +27,7 @@ const Profile = () => {
             <div className="card__image">
               <img
                 src={
-                  process.env.PUBLIC_URL + `/assets/images/profile.png`
+                  process.env.PUBLIC_URL + `/assets/images/${isLogged?.image}`
                 }
                 alt={isLogged?.name}
               />

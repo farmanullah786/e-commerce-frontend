@@ -25,7 +25,7 @@ const ForgotPassword = () => {
   return (
     <AppLayout>
       <div className="row grid">
-        <div className="col-lg-5 col-md-5 col-sm-10 col-xl-5">
+        <div className="col-lg-5 col-md-5 col-sm-12 col-xl-5">
           <div className="card overflow-hidden">
             <div className="card-body">
               <ForgotPasswordForm

@@ -41,7 +41,7 @@ const EditProfile = () => {
   return (
     <AppLayout>
       <div className="row grid">
-        <div className="col-lg-5 col-md-5 col-sm-10 col-xl-5">
+        <div className="col-lg-5 col-md-5 col-sm-12 col-xl-5">
           <div className="card overflow-hidden">
             <div
               className="card-header grid fw-bold"
@@ -60,7 +60,7 @@ const EditProfile = () => {
                     marginLeft: "-10px",
                   }}
                   src={
-                    process.env.PUBLIC_URL + `/assets/images/${"profile.png"}`
+                    process.env.PUBLIC_URL + `/assets/images/${isLogged?.image}`
                   }
                   // alt={product?.title}
                   alt={"No Image"}

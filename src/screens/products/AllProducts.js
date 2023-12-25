@@ -54,7 +54,7 @@ const Products = () => {
 
   const renderProductCards = () => {
     return currentItems.map((product) => (
-      <div key={product.id} className={`col-lg-3 col-md-6 col-sm-6 col-xl-3 `}>
+      <div key={product.id} className={`col-lg-3 col-md-6 col-sm-12 col-xl-3 `}>
         <div className="card overflow-hidden">
           <header className="card__header">
             <h1 className="product__title">{product.title}</h1>

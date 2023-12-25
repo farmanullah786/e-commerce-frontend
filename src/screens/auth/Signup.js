@@ -24,7 +24,7 @@ const Register = (props) => {
   return (
     <AppLayout>
       <div className="row grid">
-        <div className="col-lg-5 col-md-5 col-sm-10 col-xl-5">
+        <div className="col-lg-5 col-md-5 col-sm-12 col-xl-5">
           <div className="card overflow-hidden">
             <div className="card-header grid">
               <p className="text-dark mb-0 fw-bold">
