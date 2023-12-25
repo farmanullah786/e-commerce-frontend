@@ -111,7 +111,7 @@ const Products = () => {
                         Details
                       </Link>
                       <Link
-                        to={isLogged ? `/products/${product.id}` : "/login"}
+                        to={isLogged ? `/cart` : "/login"}
                         className="btn"
                       >
                         Add to cart
@@ -179,7 +179,7 @@ const Products = () => {
                         Details
                       </Link>
                       <Link
-                        to={isLogged ? `/products/${displayedProducts[0].id}` : "/login"}
+                        to={isLogged ? `/cart` : "/login"}
                         className="btn"
                       >
                         Add to cart

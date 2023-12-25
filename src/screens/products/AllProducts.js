@@ -90,7 +90,7 @@ const Products = () => {
                 <Link to={`/products/${product.id}`} className="btn">
                   Details
                 </Link>
-                <Link to={isLogged ? `/products/${product.id}` : "/login" } className="btn">
+                <Link to={isLogged ? `/cart` : "/login" } className="btn">
                   Add to cart
                 </Link>
               </>
