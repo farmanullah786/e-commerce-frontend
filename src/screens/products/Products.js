@@ -11,7 +11,7 @@ const Products = () => {
 
   const storedAuthToken = localStorage.getItem("authToken");
   const isLogged = storedAuthToken ? JSON.parse(storedAuthToken) : null;
-console.log(isLogged)
+  console.log(isLogged);
   const isLargeScreen = useMediaQuery({
     query: "(max-width: 1300px)",
   });
@@ -111,8 +111,8 @@ console.log(isLogged)
                         Details
                       </Link>
                       <Link
-                        to={`/products/${product.id}`}
-                        className="btn fw-bold"
+                        to={isLogged ? `/products/${product.id}` : "/login"}
+                        className="btn"
                       >
                         Add to cart
                       </Link>
@@ -179,8 +179,8 @@ console.log(isLogged)
                         Details
                       </Link>
                       <Link
-                        to={`/products/${displayedProducts[0].id}`}
-                        className="btn fw-bold"
+                        to={isLogged ? `/products/${displayedProducts[0].id}` : "/login"}
+                        className="btn"
                       >
                         Add to cart
                       </Link>

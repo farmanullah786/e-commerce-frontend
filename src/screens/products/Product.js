@@ -8,6 +8,9 @@ const Product = () => {
   const [status, setStatus] = useState(false);
   const params = useParams();
 
+  const storedAuthToken = localStorage.getItem("authToken");
+  const isLogged = storedAuthToken ? JSON.parse(storedAuthToken) : null;
+
   useEffect(() => {
     const selectedProduct = productsData.find(
       (prod) => prod.id.toString() === params?.productId.toString()
@@ -53,7 +56,10 @@ const Product = () => {
                   </Link>
                 </>
               ) : (
-                <Link to={`/products/${product.id}`} className="btn">
+                <Link
+                  to={isLogged ? `/products/${product.id}` : "/login"}
+                  className="btn"
+                >
                   Add to cart
                 </Link>
               )}
