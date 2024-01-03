@@ -1,15 +1,24 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import AppLayout from "../../components/applayout/AppLayout";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { jwtDecode } from "jwt-decode";
 import EditProfileForm from "../../components/forms/EditProfile";
+import { connect } from "react-redux";
+import * as actionCreators from "../../store/actions/index";
 
-const EditProfile = () => {
+const EditProfile = (props) => {
+  const [userData, setUserData] = useState(props?.user);
+  const [imageFile, setImageFile] = useState(null);
+  const [isSubmitSuccessfull, setIsSubmitSuccessfull] = useState(false);
+  const [isSuccessMessage, setIsSuccessMessage] = useState(false);
+
+  const [isServerError, setIsServerError] = useState("");
+
   const navigate = useNavigate();
   const storedAuthToken = localStorage.getItem("authToken");
-  const isLogged = storedAuthToken ? JSON.parse(storedAuthToken) : null;
-  // const logggedUser = isLogged && jwtDecode(token);
+  const isLogged = storedAuthToken ? jwtDecode(storedAuthToken) : null;
+
   const {
     register,
     handleSubmit,
@@ -17,26 +26,84 @@ const EditProfile = () => {
     reset,
     formState: { errors },
   } = useForm({ mode: "onChange" });
+  const baseUrl = process.env.REACT_APP_BASE_URL_API;
 
   const hasError =
-    errors?.email || errors?.password || errors?.confirm_password;
-  const postRequest = ({ email, name, image, password, confirm_password }) => {
-    if (!hasError && !isLogged) {
+    errors?.email ||
+    errors?.password ||
+    errors?.confirm_password ||
+    isServerError;
+  const postRequest = async ({
+    email,
+    name,
+    image,
+    password,
+    confirm_password,
+  }) => {
+    setIsServerError("");
+    setIsSubmitSuccessfull(true);
+    setIsSuccessMessage(false);
+    if (!hasError && !storedAuthToken) {
+      setIsSubmitSuccessfull(false);
       return;
     }
-    console.log(email, name, image, password, confirm_password);
-    // Perform your logic for resetting the password
-    // For now, let's simulate success by redirecting to the home page
-    // navigate("/");
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("email", email);
+    if (imageFile !== null) {
+      formData.append("image", imageFile);
+    }
+    if (password) {
+      formData.append("password", password);
+    }
+    if (confirm_password) {
+      formData.append("confirm_password", confirm_password);
+    }
+
+    try {
+      const response = await fetch(`${baseUrl}/update-user`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${storedAuthToken}`,
+        },
+        body: formData,
+      });
+      if (response?.status === 201 || response?.status === 200) {
+        const data = await response.json();
+        setTimeout(() => {
+          setImageFile(null);
+          setIsServerError(data?.message);
+          setIsSuccessMessage(true);
+          setIsSubmitSuccessfull(false);
+          props.getRequestToLoginUser(
+            `${baseUrl}/login-user/${isLogged?.userId}`,
+            storedAuthToken
+          );
+          reset({ password: "", confirm_password: "", image: "" });
+        }, 2000);
+      } else {
+        const data = await response.json();
+        setTimeout(async () => {
+          setIsServerError(data?.message);
+          setIsSubmitSuccessfull(false);
+        }, 1000);
+      }
+    } catch (err) {
+      setTimeout(() => {
+        setIsSubmitSuccessfull(false);
+        setIsServerError(err);
+      }, 1000);
+    }
   };
 
   useEffect(() => {
-    reset({
-      name: isLogged?.name,
-      email: isLogged?.email,
-      image: process.env.PUBLIC_URL + "/assets/images/profile.png",
-    });
-  }, []);
+    if (props?.user !== userData) {
+      reset({
+        name: props?.user?.name,
+        email: props?.user?.email,
+      });
+    }
+  }, [props?.user]);
 
   return (
     <AppLayout>
@@ -50,7 +117,6 @@ const EditProfile = () => {
               Edit Your Profile
             </div>
             <div className="card-body">
-              {/* {params?.productId && ( */}
               <div className="row mb-4 grid" style={{ marginTop: "-10px" }}>
                 <img
                   style={{
@@ -60,16 +126,22 @@ const EditProfile = () => {
                     marginLeft: "-10px",
                   }}
                   src={
-                    process.env.PUBLIC_URL + `/assets/images/${isLogged?.image}`
+                    imageFile
+                      ? URL.createObjectURL(imageFile)
+                      : process.env.REACT_APP_BASE_URL + props?.user?.image
                   }
-                  // alt={product?.title}
                   alt={"No Image"}
                 />
               </div>
-              {/* )} */}
               {hasError && (
-                <div className="row mb-4 form-errors">
-                  {errors?.email
+                <div
+                  className={`row mb-4 form-errors ${
+                    isSuccessMessage && "success"
+                  }`}
+                >
+                  {isServerError
+                    ? isServerError
+                    : errors?.email
                     ? errors?.email?.message
                     : errors?.password
                     ? errors?.password?.message
@@ -84,6 +156,8 @@ const EditProfile = () => {
                 register={register}
                 getValues={getValues}
                 errors={errors}
+                setImageFile={setImageFile}
+                isSubmitSuccessfull={isSubmitSuccessfull}
               />
             </div>
           </div>
@@ -93,4 +167,15 @@ const EditProfile = () => {
   );
 };
 
-export default EditProfile;
+const mapDispatchToProps = (dispatch) => {
+  return {
+    getRequestToLoginUser: (url, storedAuthToken) =>
+      dispatch(actionCreators.getRequestToUserDispatch(url, storedAuthToken)),
+  };
+};
+const mapStateToProps = (state) => {
+  return {
+    user: state.user.userData,
+  };
+};
+export default connect(mapStateToProps, mapDispatchToProps)(EditProfile);

@@ -1,51 +1,119 @@
 import React, { useEffect, useState } from "react";
+import { jwtDecode } from "jwt-decode";
+
 import AppLayout from "../../components/applayout/AppLayout";
 import cartData from "./cartData.json";
 import collect from "collect.js";
 import { Link, useNavigate } from "react-router-dom";
+import { connect } from "react-redux";
+import * as actionCreators from "../../store/actions/index";
 
-const Cart = () => {
-  const [cartItems, setCartItems] = useState(cartData);
+const Cart = (props) => {
+  const [cartItems, setCartItems] = useState(props?.carts);
+  const [isSubmitSuccessfull, setIsSubmitSuccessfull] = useState(false);
+
   const navigate = useNavigate();
   const storedAuthToken = localStorage.getItem("authToken");
-  const isLogged = storedAuthToken ? JSON.parse(storedAuthToken) : null;
+  const isLogged = storedAuthToken ? jwtDecode(storedAuthToken) : null;
 
-  const deleteCartItem = (cartItemId) => {
-    // Find the index of the item with the specified id
-    const index = cartItems.findIndex((item) => item.id === cartItemId);
+  const BASE_URL = process.env.REACT_APP_BASE_URL_API;
 
-    if (index !== -1) {
-      const updatedCartItems = [...cartItems];
+  // Calculate the total price using collect.js
+  const totalPrice = collect(cartItems).sum("price");
+  const totalQuantity = collect(cartItems).sum("qty");
+  const productIds = collect(cartItems)
+    .map((item) => ({
+      productId: item?.productId?._id, // Access property directly
+      qty: item.qty,
+    }))
+    .all();
 
-      if (updatedCartItems[index].qty > 1) {
-        // If quantity is greater than 1, decrement the quantity and adjust the price
-        updatedCartItems[index].qty -= 1;
-        updatedCartItems[index].price =
-          updatedCartItems[index].price / (updatedCartItems[index].qty + 1);
-      } else {
-        // If quantity is 1, remove the item
-        updatedCartItems.splice(index, 1);
+  const deleteCartItem = async (cartItemId) => {
+    if (!cartItemId || !isLogged?.userId || !storedAuthToken) {
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("_id", cartItemId);
+    formData.append("userId", isLogged?.userId);
+
+    let URL = `${BASE_URL}/api/delete-cart`;
+    let method = "DELETE";
+
+    try {
+      const response = await fetch(URL, {
+        method: method,
+        headers: {
+          Authorization: `Bearer ${storedAuthToken}`,
+        },
+        body: formData,
+      });
+      if (response?.status === 201 || response?.status === 200) {
+        const data = await response.json();
+        props.getRequestToCarts(`${BASE_URL}/carts`, storedAuthToken);
       }
-
-      // Update the state with the modified data
-      setCartItems(updatedCartItems);
-
-      // Simulate saving the modified data back to the JSON file
-      // In a real-world scenario, you would make an HTTP request to a server to handle this operation.
-      // For example, you might use fetch or axios to send a PATCH request to a server endpoint.
+    } catch (err) {
+      console.log(err);
     }
   };
 
-  const PostOrder = () => {
-    //later i will store this cart in database
-    navigate("/orders");
+  const PostOrder = async () => {
+    setIsSubmitSuccessfull(true);
+    if (
+      !isLogged?.userId ||
+      !totalPrice ||
+      !totalQuantity ||
+      !storedAuthToken ||
+      !productIds
+    ) {
+      setTimeout(() => {
+        setIsSubmitSuccessfull(false);
+        return;
+      }, 1000);
+    }
+
+    const formData = new FormData();
+    formData.append("cartItems", JSON.stringify(productIds));
+    formData.append("userId", isLogged?.userId);
+    formData.append("price", totalPrice);
+    formData.append("qty", totalQuantity);
+
+    let URL = `${BASE_URL}/order`;
+    let method = "POST";
+
+    try {
+      const response = await fetch(URL, {
+        method: method,
+        headers: {
+          Authorization: `Bearer ${storedAuthToken}`,
+        },
+        body: formData,
+      });
+      if (response?.status === 201 || response?.status === 200) {
+        const data = await response.json();
+        console.log("Data", data);
+        setTimeout(() => {
+          setIsSubmitSuccessfull(false);
+          props.getRequestToCarts(`${BASE_URL}/carts`, storedAuthToken);
+        }, 2000);
+      } else {
+        setTimeout(() => {
+          setIsSubmitSuccessfull(false);
+        }, 1000);
+      }
+    } catch (err) {
+      setTimeout(() => {
+        setIsSubmitSuccessfull(false);
+      }, 1000);
+    }
   };
-  // Calculate the total price using collect.js
-  const totalPrice = collect(cartItems).sum("price");
 
   useEffect(() => {
-    setCartItems(cartItems.filter((cart) => cart?.user?.id === isLogged?.id));
-  }, [isLogged]);
+    if (props?.carts !== cartItems) {
+      setCartItems(props?.carts);
+    }
+    // setCartItems(cartItems.filter((cart) => cart?.user?.id === isLogged?.id));
+  }, [isLogged, props?.carts]);
   return (
     <AppLayout>
       {cartItems?.length > 0 ? (
@@ -56,25 +124,25 @@ const Cart = () => {
                 <div>
                   <button
                     className="mb-0 text-white btn"
-                    onClick={PostOrder}
+                    disabled={isSubmitSuccessfull ? true : false}
+                    onClick={!isSubmitSuccessfull && PostOrder}
                   >
-                    Order Now
+                    {isSubmitSuccessfull ? "Loading..." : "Order Now"}
                   </button>
                 </div>
               </div>
               {cartItems?.map((cart) => (
-                <div className="" key={cart?.id}>
+                <div className="" key={cart?._id}>
                   <div className="d-flex p-4">
                     <img
                       className="avatar avatar-xl br-5 me-3 align-self-center cover-image"
                       src={
-                        process.env.PUBLIC_URL +
-                        `/assets/images/${cart?.product?.imageUrl}`
+                        process.env.REACT_APP_BASE_URL + cart?.productId?.image
                       }
-                      alt={cart?.product?.title}
+                      alt={cart?.productId?.title}
                     />
                     <div className="wd-50p cart-content">
-                      <h5 className="">{cart?.product?.title}</h5>
+                      <h5 className="">{cart?.productId?.title}</h5>
                       <p className="fs-13 text-muted mb-0">
                         Quantity: {cart?.qty < 10 ? "0" + cart?.qty : cart?.qty}
                       </p>
@@ -86,7 +154,7 @@ const Cart = () => {
                       <a
                         href="javascript:void(0)"
                         className="fs-16 p-0 cart-trash"
-                        onClick={() => deleteCartItem(cart?.id)}
+                        onClick={() => deleteCartItem(cart?._id)}
                       >
                         <i className="fe fe-trash-2 border text-danger brround d-block p-2"></i>
                       </a>
@@ -112,4 +180,16 @@ const Cart = () => {
   );
 };
 
-export default Cart;
+const mapStateToProps = (state) => {
+  return {
+    carts: state?.cart?.cartsData,
+  };
+};
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    getRequestToCarts: (url, storedAuthToken) =>
+      dispatch(actionCreators.getRequestToCartsDispatch(url, storedAuthToken)),
+  };
+};
+export default connect(mapStateToProps, mapDispatchToProps)(Cart);

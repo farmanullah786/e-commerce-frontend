@@ -13,14 +13,16 @@ import "react-toastify/dist/ReactToastify.css";
 import App from "./App";
 
 // Import reducers
-import categories from "./store/reducers/categories";
-import prompts from "./store/reducers/prompts";
+import user from "./store/reducers/user";
+import product from "./store/reducers/product";
+import cart from "./store/reducers/cart";
+import order from "./store/reducers/order";
 
 // Import Web Vitals
 import reportWebVitals from "./reportWebVitals";
 
 // Combine reducers
-const rootReducers = combineReducers({ categories, prompts });
+const rootReducers = combineReducers({ product,user,cart ,order});
 
 // Redux DevTools Extension setup
 const composeEnhancer = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;

@@ -6,37 +6,64 @@ import LoginForm from "../../components/forms/Login";
 import usersData from "./users.json";
 
 const Login = (props) => {
+  const [isSubmitSuccessfull, setIsSubmitSuccessfull] = useState(false);
+  const [isSuccessMessage, setIsSuccessMessage] = useState(false);
+  const [isServerError, setIsServerError] = useState("");
+
   const navigate = useNavigate();
-  const [inValidCredential, setInValidCredential] = useState("");
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm({ mode: "onChange" });
 
-  const postRequest = ({ email, password }) => {
-    if (!email && !password) {
+  const postRequest = async ({ email, password }) => {
+    setIsServerError("");
+    setIsSubmitSuccessfull(true);
+    setIsSuccessMessage(false);
+
+    if (!email || !password) {
+      setIsSubmitSuccessfull(false);
       return;
     }
-    console.log(email,password)
 
-    const user = usersData.find(
-      (user) => user.email === email && user.password === password
-    );
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_BASE_URL_API}/signin`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email,
+            password,
+          }),
+        }
+      );
+      if (response?.status === 201 || response?.status === 200) {
+        const data = await response.json();
+        setTimeout(() => {
+          localStorage.setItem("authToken", data?.access_token);
+          setIsSubmitSuccessfull(false);
+          setIsSuccessMessage(true);
 
-    if (user) {
-      try {
-        localStorage.setItem("authToken", JSON.stringify(user));
-        setInValidCredential("");
-        navigate("/");
-      } catch (error) {
-        console.error("Error setting item in local storage:", error);
-        // Handle the error, such as showing a user-friendly message
+          reset();
+          navigate("/");
+        }, 2000);
+      } else {
+        const data = await response.json();
+        setTimeout(() => {
+          setIsServerError(data?.message);
+          setIsSubmitSuccessfull(false);
+        }, 1000);
       }
-    } else {
-      // Handle invalid credentials, show error message, etc.
-      setInValidCredential("Your email or password is incorrect.");
-      console.log("Invalid credentials");
+    } catch (err) {
+      setTimeout(() => {
+        setIsSubmitSuccessfull(false);
+        setIsServerError(err);
+      }, 1000);
     }
   };
 
@@ -58,10 +85,14 @@ const Login = (props) => {
               </p>
             </div>
             <div className="card-body">
-              {(errors?.email || errors?.password || inValidCredential) && (
-                <div className="row mb-4 form-errors">
-                  {inValidCredential
-                    ? inValidCredential
+              {(errors?.email || errors?.password || isServerError) && (
+                <div
+                  className={`row mb-4 form-errors ${
+                    isSuccessMessage && "success"
+                  }`}
+                >
+                  {isServerError
+                    ? isServerError
                     : errors?.email && errors?.password
                     ? "All fields are required!"
                     : errors?.email
@@ -76,6 +107,7 @@ const Login = (props) => {
                 postRequest={postRequest}
                 register={register}
                 errors={errors}
+                isSubmitSuccessfull={isSubmitSuccessfull}
               />
             </div>
           </div>

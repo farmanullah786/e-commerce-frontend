@@ -1,25 +1,24 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 import { useMediaQuery } from "react-responsive";
 
 import notificationsData from "../screens/notification/notifications.json";
 import cartData from "../screens/cart/cartData.json";
+import { connect } from "react-redux";
 
-const Header = () => {
+const Header = (props) => {
   const [notifications, setNotifications] = useState(notificationsData);
   let path = window.location.pathname;
 
   path = path.split("/")[1] ? path.split("/")[1] : "/";
 
-  const isSmallScreen = useMediaQuery({
-    query: "(max-width: 991px)",
-  });
   const navigate = useNavigate();
   const storedAuthToken = localStorage.getItem("authToken");
-  const isLogged = storedAuthToken ? JSON.parse(storedAuthToken) : null;
+  const isLogged = storedAuthToken ? jwtDecode(storedAuthToken) : null;
   const removeToken = () => {
     localStorage.removeItem("authToken");
-    navigate("/");
+    navigate("/login");
   };
   const handleDeleteNotification = (notificationId) => {
     // Filter out the notification with the specified id
@@ -38,11 +37,6 @@ const Header = () => {
   const totalCart = cartData.filter(
     (cart) => cart?.user?.id === isLogged?.id
   )?.length;
-  // useEffect(() => {
-  //   if (isLogged) {
-  //     localStorage.removeItem("authToken");
-  //   }
-  // }, [isLogged, removeToken]);
   return (
     <>
       <div className=" app-header header sticky bg-cyan">
@@ -119,9 +113,9 @@ const Header = () => {
                               >
                                 Cart
                               </span>
-                              {totalCart > 0 && (
+                              {props?.carts.length > 0 && (
                                 <span className="badge cart-badge">
-                                  {totalCart}
+                                  {props?.carts.length}
                                 </span>
                               )}
                             </Link>
@@ -142,23 +136,23 @@ const Header = () => {
                             </span>
                           </Link>
                         </li>
-                        {isLogged?.is_staff && (
-                          <li className="slide">
-                            <Link
-                              className="side-menu__item"
-                              data-bs-toggle="slide"
-                              to="/add-product"
+                        {/* {isLogged?.is_staff && ( */}
+                        <li className="slide">
+                          <Link
+                            className="side-menu__item"
+                            data-bs-toggle="slide"
+                            to="/add-product"
+                          >
+                            <span
+                              className={`side-menu__label ${
+                                path === "add-product" ? " active" : ""
+                              }`}
                             >
-                              <span
-                                className={`side-menu__label ${
-                                  path === "add-product" ? " active" : ""
-                                }`}
-                              >
-                                Add Product
-                              </span>
-                            </Link>
-                          </li>
-                        )}
+                              Add Product
+                            </span>
+                          </Link>
+                        </li>
+                        {/* )} */}
                       </>
                     )}
                   </ul>{" "}
@@ -281,8 +275,11 @@ const Header = () => {
                           >
                             <img
                               src={
-                                process.env.PUBLIC_URL +
-                                `/assets/images/${isLogged?.image}`
+                                isLogged
+                                  ? process.env.REACT_APP_BASE_URL +
+                                    props?.user?.image
+                                  : process.env.PUBLIC_URL +
+                                    "/assets/images/profile-1.jpeg"
                               }
                               alt="profile-user"
                               className="avatar  profile-user brround cover-image"
@@ -292,7 +289,7 @@ const Header = () => {
                             <div className="drop-heading">
                               <div className="text-center">
                                 <h5 className="text-dark mb-0 fs-14 fw-semibold">
-                                  {isLogged?.name}
+                                  {props?.user?.name}
                                 </h5>
                                 <small className="text-muted">
                                   {isLogged?.is_staff ? "Super Admin" : "Admin"}
@@ -335,4 +332,10 @@ const Header = () => {
   );
 };
 
-export default Header;
+const mapStateToProps = (state) => {
+  return {
+    user: state.user.userData,
+    carts: state?.cart?.cartsData,
+  };
+};
+export default connect(mapStateToProps)(Header);

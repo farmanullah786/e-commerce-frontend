@@ -24,15 +24,26 @@ const ForgotPassword = (props) => {
           placeholder="Enter Email"
         />
       </div>
-      {props?.errors?.email && (
-        <div className="row mb-4 invalid p-1">
-          {props?.errors?.email ? props?.errors?.email?.message : ""}
+      {(props?.isServerError || props?.errors?.email) && (
+        <div
+          className={`row mb-4 invalid p-1 ${
+            props?.isSuccessMessage && !props?.errors?.email && "success"
+          }`}
+        >
+          {props?.errors?.email
+            ? props?.errors?.email?.message
+            : props?.isServerError
+            ? props?.isServerError
+            : ""}
         </div>
       )}
-
       <div className="grid">
-        <button type="submit" className="btn w-25 fw-bold">
-          Verify
+        <button
+          type={props?.isSubmitSuccessfull ? "button" : "submit"}
+          className="btn  fw-bold"
+          disabled={props?.isSubmitSuccessfull ? true : false}
+        >
+          {props?.isSubmitSuccessfull ? "Loading..." : "Verify"}
         </button>
       </div>
     </form>

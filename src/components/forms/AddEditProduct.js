@@ -10,6 +10,10 @@ const AddEditProduct = (props) => {
               value: true,
               message: "Title field is required!",
             },
+            minLength: {
+              value: 5,
+              message: "Title should be 5 characters long!",
+            },
           })}
           type="text"
           className={`form-control ${props?.errors?.title && "invalid"}`}
@@ -19,10 +23,16 @@ const AddEditProduct = (props) => {
       <div className="row mb-4">
         <input
           type="number"
+          step="0.01" // Allow decimal numbers
           {...props?.register("price", {
             required: {
               value: true,
               message: "Price field is required!",
+            },
+            pattern: {
+              value: /^\d+(\.\d{1,2})?$/, // Allow up to two decimal places
+              message:
+                "Please enter a valid positive numeric value for the price.",
             },
           })}
           className={`form-control ${props?.errors?.price && "invalid"}`}
@@ -33,16 +43,25 @@ const AddEditProduct = (props) => {
         <input
           {...props?.register("image", {
             required: {
-              value: true,
+              value: !props?.productId ? true : false,
               message: "Image field is required!",
             },
           })}
           type="file"
           className={`form-control ${props?.errors?.image && "invalid"}`}
           placeholder="Upload Product Image"
+          onChange={(e) => {
+            const selectedFile = e.target.files[0];
+            if (selectedFile) {
+              props.setImageFile(selectedFile);
+              props.setImageEditFile("");
+            } else {
+              props.setImageEditFile(props?.imageFile);
+            }
+          }}
         />
       </div>
-      {props?.productId && (
+      {(props?.imageFile || props?.imageEditFile) && (
         <div className="row mb-4">
           <img
             style={{
@@ -52,10 +71,13 @@ const AddEditProduct = (props) => {
               marginLeft: "-10px",
             }}
             src={
-              process.env.PUBLIC_URL +
-              `/assets/images/${props?.product?.imageUrl}`
+              props?.imageFile
+                ? URL.createObjectURL(props?.imageFile)
+                : props?.imageEditFile
+                ? props?.imageEditFile
+                : ""
             }
-            alt={props?.product?.title}
+            alt={"No Image"}
           />
         </div>
       )}
@@ -79,8 +101,12 @@ const AddEditProduct = (props) => {
         />
       </div>
       <div className="grid">
-        <button type="submit" className="btn fw-bold">
-          {props?.formText}
+        <button
+          type={props?.isSubmitSuccessfull ? "button" : "submit"}
+          className="btn fw-bold"
+          disabled={props?.isSubmitSuccessfull ? true : false}
+        >
+          {props?.isSubmitSuccessfull ? "Loading..." : props?.formText}
         </button>
       </div>
     </form>

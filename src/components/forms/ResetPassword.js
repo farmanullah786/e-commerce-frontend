@@ -39,8 +39,12 @@ const ResetPassword = (props) => {
         />
       </div>
       <div className="grid">
-        <button type="submit" className="btn w-25 fw-bold">
-          Reset
+        <button
+          type={props?.isSubmitSuccessfull ? "button" : "submit"}
+          className="btn  fw-bold"
+          disabled={props?.isSubmitSuccessfull ? true : false}
+        >
+          {props?.isSubmitSuccessfull ? "Loading..." : "Reset"}
         </button>
       </div>
     </form>

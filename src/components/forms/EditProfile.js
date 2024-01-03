@@ -2,17 +2,23 @@ import React from "react";
 
 const EditProfile = (props) => {
   return (
-    <form onSubmit={props?.handleSubmit(props?.postRequest)}>
+    <form onSubmit={props.handleSubmit(props.postRequest)}>
       <div className="row mb-4">
         <input
-          {...props?.register("image")}
+          {...props.register("image")}
           type="file"
           className={`form-control`}
+          onChange={(e) => {
+            const selectedFile = e.target.files[0];
+            if (selectedFile) {
+              props.setImageFile(selectedFile);
+            }
+          }}
         />
       </div>
       <div className="row mb-4">
         <input
-          {...props?.register("email", {
+          {...props.register("email", {
             required: {
               value: true,
               message: "Email field is required!",
@@ -24,14 +30,14 @@ const EditProfile = (props) => {
             },
           })}
           type="email"
-          className={`form-control ${props?.errors?.email && "invalid"}`}
+          className={`form-control ${props.errors.email && "invalid"}`}
           placeholder="Enter Your New Email"
         />
       </div>
 
       <div className="row mb-4">
         <input
-          {...props?.register("name")}
+          {...props.register("name")}
           type="text"
           className={`form-control`}
           placeholder="Enter Your New Name"
@@ -39,26 +45,26 @@ const EditProfile = (props) => {
       </div>
       <div className="row mb-4">
         <input
-          {...props?.register("password", {
+          {...props.register("password", {
             minLength: {
               value: 5,
               message: "Password should be 5 characters long!",
             },
           })}
           type="password"
-          className={`form-control ${props?.errors?.password && "invalid"}`}
+          className={`form-control ${props.errors.password && "invalid"}`}
           placeholder="Enter Your New Password"
         />
       </div>
       <div className="row mb-4">
         <input
-          {...props?.register("confirm_password", {
+          {...props.register("confirm_password", {
             minLength: {
               value: 5,
               message: "Password should be 5 characters long!",
             },
             validate: (value) => {
-              const { password } = props?.getValues();
+              const { password } = props.getValues();
               return (
                 password === value ||
                 "Password and Confirm password should match!"
@@ -67,14 +73,18 @@ const EditProfile = (props) => {
           })}
           type="password"
           className={`form-control ${
-            props?.errors?.confirm_password && "invalid"
+            props.errors.confirm_password && "invalid"
           }`}
-          placeholder="Confirm Password (agian)"
+          placeholder="Confirm Password (again)"
         />
       </div>
       <div className="grid">
-        <button type="submit" className="btn w-25 fw-bold">
-          Edit
+        <button
+          type={props.isSubmitSuccessfull ? "button" : "submit"}
+          className="btn w-25 fw-bold"
+          disabled={props.isSubmitSuccessfull}
+        >
+          {props.isSubmitSuccessfull ? "Loading..." : "Edit"}
         </button>
       </div>
     </form>

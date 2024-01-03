@@ -77,6 +77,14 @@ body {
   background: #ffc2c2 !important;
 }
 
+.invalid.success,
+.form-errors.success 
+{
+  border-color: red !important;
+  background: rgb(131, 198, 131) !important;
+  color: white;
+}
+
 .form-errors {
   text-align: center;
   padding: 4px;
@@ -233,6 +241,14 @@ textarea:focus {
   border-radius: 100%;
   padding: 2px 4px;
   left: -2px;
+  font-weight: bold;
+}
+
+.order__description .cart-badge{
+  top: -1px!important;
+  border-radius: 100%;
+  padding: 2px 4px;
+  left: 2px;
   font-weight: bold;
 }
 

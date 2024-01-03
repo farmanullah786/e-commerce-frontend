@@ -1,11 +1,12 @@
 import React from "react";
+import {jwtDecode} from "jwt-decode"
+
 import GetRequests from "../../GetRequests";
 import Footer from "../Footer";
 import Header from "../Header";
 const AppLayout = (props) => {
   const storedAuthToken = localStorage.getItem("authToken");
-  const isLogged = storedAuthToken ? JSON.parse(storedAuthToken) : null;
-
+  const isLogged = storedAuthToken ? jwtDecode(storedAuthToken) : null;
   return (
     <>
       <div className="page">

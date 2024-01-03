@@ -1,4 +1,6 @@
 import React from "react";
+import { jwtDecode } from "jwt-decode";
+
 import { useMediaQuery } from "react-responsive";
 import AppLayout from "../components/applayout/AppLayout";
 
