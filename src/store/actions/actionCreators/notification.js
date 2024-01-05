@@ -1,22 +1,21 @@
 import * as actionTypes from "../actionTypes";
 
-const getRequestToUser = (data) => ({
-  type: actionTypes.GET_REQUEST_TO_USER,
+const getRequestToNotifications = (data) => ({
+  type: actionTypes.GET_REQUEST_TO_NOTIFICATIONS,
   data: data,
 });
 
-export const getRequestToUserDispatch = (url, token) => async (dispatch) => {
+export const getRequestToNotificationsDispatch = (url, token) => async (dispatch) => {
   try {
     const response = await fetch(url, {
       method: "GET",
       headers: {
-        Authorization: `Bearer ${token}`, // Include the token in the Authorization header
+        Authorization: `Bearer ${token}`,
       },
     });
-
     if (response?.status === 200) {
       const data = await response.json();
-      dispatch(getRequestToUser(data?.user));
+      dispatch(getRequestToNotifications(data?.notifications));
     }
   } catch (error) {
     console.error(error);

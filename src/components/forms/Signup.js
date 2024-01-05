@@ -84,7 +84,7 @@ const Signup = (props) => {
       <div className="grid">
         <button
           type={props?.isSubmitSuccessfull ? "button" : "submit"}
-          className="btn w-25 fw-bold"
+          className="btn  fw-bold"
           disabled={props?.isSubmitSuccessfull ? true : false}
         >
           {props?.isSubmitSuccessfull ? "Loading..." : "Register"}

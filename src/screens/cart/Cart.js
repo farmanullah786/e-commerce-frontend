@@ -2,9 +2,7 @@ import React, { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 
 import AppLayout from "../../components/applayout/AppLayout";
-import cartData from "./cartData.json";
 import collect from "collect.js";
-import { Link, useNavigate } from "react-router-dom";
 import { connect } from "react-redux";
 import * as actionCreators from "../../store/actions/index";
 
@@ -12,7 +10,6 @@ const Cart = (props) => {
   const [cartItems, setCartItems] = useState(props?.carts);
   const [isSubmitSuccessfull, setIsSubmitSuccessfull] = useState(false);
 
-  const navigate = useNavigate();
   const storedAuthToken = localStorage.getItem("authToken");
   const isLogged = storedAuthToken ? jwtDecode(storedAuthToken) : null;
 
@@ -30,6 +27,7 @@ const Cart = (props) => {
 
   const deleteCartItem = async (cartItemId) => {
     if (!cartItemId || !isLogged?.userId || !storedAuthToken) {
+      
       return;
     }
 
@@ -37,7 +35,7 @@ const Cart = (props) => {
     formData.append("_id", cartItemId);
     formData.append("userId", isLogged?.userId);
 
-    let URL = `${BASE_URL}/api/delete-cart`;
+    let URL = `${BASE_URL}/delete-cart`;
     let method = "DELETE";
 
     try {
@@ -48,6 +46,8 @@ const Cart = (props) => {
         },
         body: formData,
       });
+
+      console.log(response)
       if (response?.status === 201 || response?.status === 200) {
         const data = await response.json();
         props.getRequestToCarts(`${BASE_URL}/carts`, storedAuthToken);

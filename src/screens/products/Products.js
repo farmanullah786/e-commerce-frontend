@@ -11,6 +11,7 @@ const Products = (props) => {
   const [startIndex, setStartIndex] = useState(0);
   const [products, setProducts] = useState(props?.products);
   const [loadingStates, setLoadingStates] = useState({});
+  const [displayedProducts, setDisplayedProducts] = useState([]);
 
   const navigate = useNavigate();
 
@@ -121,6 +122,23 @@ const Products = (props) => {
       if (response?.status === 201 || response?.status === 200) {
         setTimeout(() => {
           props.getRequestToProducts(`${BASE_URL}/products`);
+
+          const remainingItems = products.length - (startIndex + 4);
+          setStartIndex((prevIndex) => {
+            if (
+              (prevIndex <= 0 || prevIndex + 1 >= 2) &&
+              remainingItems !== 0
+            ) {
+              return prevIndex;
+            }
+            if (prevIndex <= 1) {
+              return startIndex + 4;
+            } else {
+              return prevIndex - 1;
+            }
+          });
+          // Remove the deleted product from the local state
+
           setLoadingStates((prevLoadingStates) => ({
             ...prevLoadingStates,
             [productId]: false,
@@ -133,17 +151,25 @@ const Products = (props) => {
           ...prevLoadingStates,
           [productId]: false,
         }));
-      }, 1000);
+      }, 2000);
       console.log(err);
     }
+  };
+  const updateDisplayedProducts = () => {
+    setDisplayedProducts(
+      products?.length > 4
+        ? products?.slice(startIndex, startIndex + 4)
+        : products
+    );
   };
   useEffect(() => {
     // Update local state only if props.products has changed
     if (props.products !== products) {
       setProducts(props.products);
     }
-  }, [props.products]);
-  const displayedProducts = products?.slice(startIndex, startIndex + 4);
+    // Update displayedProducts when startIndex or products change
+    updateDisplayedProducts();
+  }, [props.products, startIndex, products]);
   return (
     <AppLayout>
       {displayedProducts?.length > 0 ? (
@@ -192,7 +218,7 @@ const Products = (props) => {
                         >
                           Edit
                         </Link>
-                        <Link
+                        <button
                           className="btn btn-delete fw-bold"
                           onClick={() =>
                             !loadingStates[product._id] &&
@@ -200,7 +226,7 @@ const Products = (props) => {
                           }
                         >
                           {loadingStates[product._id] ? "..." : "Delete"}
-                        </Link>
+                        </button>
                       </>
                     ) : (
                       <>
@@ -269,7 +295,7 @@ const Products = (props) => {
                       >
                         Edit
                       </Link>
-                      <Link
+                      <button
                         className="btn btn-delete fw-bold"
                         onClick={() =>
                           !loadingStates[displayedProducts[0]._id] &&
@@ -279,7 +305,7 @@ const Products = (props) => {
                         {loadingStates[displayedProducts[0]._id]
                           ? "..."
                           : "Delete"}
-                      </Link>
+                      </button>
                     </>
                   ) : (
                     <>
@@ -311,26 +337,30 @@ const Products = (props) => {
           )}
 
           <div className="grid">
-            <button
-              onClick={handlePrev}
-              className={`btn fw-bold ${
-                isSmallScreen || isMediumScreen ? "d-none" : ""
-              }`}
-            >
-              Previous
-            </button>
+            {products?.length > 4 && (
+              <button
+                onClick={handlePrev}
+                className={`btn fw-bold ${
+                  isSmallScreen || isMediumScreen ? "d-none" : ""
+                }`}
+              >
+                Previous
+              </button>
+            )}
 
             <Link to={`/product-lists`} className="btn fw-bold">
               See All Products
             </Link>
-            <button
-              onClick={handleNext}
-              className={`btn fw-bold ${
-                isSmallScreen || isMediumScreen ? "d-none" : ""
-              }`}
-            >
-              Next
-            </button>
+            {products?.length > 4 && (
+              <button
+                onClick={handleNext}
+                className={`btn fw-bold ${
+                  isSmallScreen || isMediumScreen ? "d-none" : ""
+                }`}
+              >
+                Next
+              </button>
+            )}
           </div>
         </div>
       ) : (

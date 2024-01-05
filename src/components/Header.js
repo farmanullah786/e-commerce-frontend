@@ -1,14 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-import { useMediaQuery } from "react-responsive";
-
-import notificationsData from "../screens/notification/notifications.json";
 import cartData from "../screens/cart/cartData.json";
 import { connect } from "react-redux";
+import * as actionCreators from "../store/actions/index";
 
 const Header = (props) => {
-  const [notifications, setNotifications] = useState(notificationsData);
+  const [notifications, setNotifications] = useState(props?.user?.notification);
   let path = window.location.pathname;
 
   path = path.split("/")[1] ? path.split("/")[1] : "/";
@@ -20,23 +18,35 @@ const Header = (props) => {
     localStorage.removeItem("authToken");
     navigate("/login");
   };
-  const handleDeleteNotification = (notificationId) => {
-    // Filter out the notification with the specified id
-    const updatedNotifications = notifications.filter(
-      (notification) => notification.id !== notificationId
-    );
 
-    // Update the state with the modified data
-    setNotifications(updatedNotifications);
-    document.querySelector(".notification-dropdown").classList.add("show");
-
-    // Here you can add additional logic to delete the notification on the server,
-    // for example, by sending a DELETE request to an API endpoint.
+  const handleDeleteNotification = async (notificationId) => {
+    const URL = `${process.env.REACT_APP_BASE_URL_API}/delete-notification/${notificationId}`;
+    const method = "DELETE";
+    try {
+      const response = await fetch(URL, {
+        method: method,
+        headers: {
+          Authorization: `Bearer ${storedAuthToken}`,
+        },
+      });
+      if (response?.status === 201 || response?.status === 200) {
+        setTimeout(() => {
+          props.getRequestToNotifications(
+            `${process.env.REACT_APP_BASE_URL_API}/notifications`,
+            storedAuthToken
+          );
+        }, 1000);
+      }
+    } catch (err) {
+      console.log(err);
+    }
   };
 
-  const totalCart = cartData.filter(
-    (cart) => cart?.user?.id === isLogged?.id
-  )?.length;
+  useEffect(() => {
+    if (notifications !== props?.notification) {
+      setNotifications(props?.notification);
+    }
+  }, [props?.notification]);
   return (
     <>
       <div className=" app-header header sticky bg-cyan">
@@ -136,23 +146,23 @@ const Header = (props) => {
                             </span>
                           </Link>
                         </li>
-                        {/* {isLogged?.is_staff && ( */}
-                        <li className="slide">
-                          <Link
-                            className="side-menu__item"
-                            data-bs-toggle="slide"
-                            to="/add-product"
-                          >
-                            <span
-                              className={`side-menu__label ${
-                                path === "add-product" ? " active" : ""
-                              }`}
+                        {isLogged?.is_staff && (
+                          <li className="slide">
+                            <Link
+                              className="side-menu__item"
+                              data-bs-toggle="slide"
+                              to="/add-product"
                             >
-                              Add Product
-                            </span>
-                          </Link>
-                        </li>
-                        {/* )} */}
+                              <span
+                                className={`side-menu__label ${
+                                  path === "add-product" ? " active" : ""
+                                }`}
+                              >
+                                Add Product
+                              </span>
+                            </Link>
+                          </li>
+                        )}
                       </>
                     )}
                   </ul>{" "}
@@ -198,72 +208,78 @@ const Header = (props) => {
                       </>
                     ) : (
                       <>
-                        <div className="dropdown  d-flex notifications slide">
-                          <Link
-                            className="nav-link icon side-menu__item notification-bell"
-                            data-bs-toggle="dropdown"
-                          >
-                            <i className="fe fe-bell"></i>
-                            {isLogged && notifications?.length > 0 && (
-                              <span className="pulse"></span>
-                            )}
-                          </Link>
-                          <div className="dropdown-menu dropdown-menu-end dropdown-menu-arrow notification-dropdown">
-                            <div className="drop-heading border-bottom">
-                              <div className="d-flex">
-                                <h6 className="mt-1 mb-0 fs-16 fw-semibold text-dark">
-                                  Notifications
-                                </h6>
-                              </div>
-                            </div>
-                            <div className="notifications-menu">
-                              {notifications?.length > 0 &&
-                                notifications?.map((notification) => (
-                                  <div
-                                    className="dropdown-item d-flex p-4"
-                                    key={notification.id}
-                                  >
-                                    <div className="me-2 notifyimg  bg-primary brround box-shadow-primary">
-                                      <i
-                                        className={`fe ${notification.icon}`}
-                                      ></i>
-                                    </div>
-                                    <div className="mt-1 wd-80p">
-                                      <h5 className="notification-label mb-1">
-                                        {notification.label}{" "}
-                                      </h5>
-                                      <span className="notification-subtext">
-                                        {notification.subtext}{" "}
-                                      </span>
-                                    </div>
-                                    <div className="ms-auto text-end d-flex">
-                                      <a
-                                        href="javascript:void(0)"
-                                        className="fs-16  p-0 "
-                                        onClick={() =>
-                                          handleDeleteNotification(
-                                            notification.id
-                                          )
-                                        }
-                                      >
-                                        <i
-                                          className="fe fe-trash-2 border brround d-block p-2 notification-trash"
-                                          style={{ color: "#007ea7" }}
-                                        ></i>
-                                      </a>
-                                    </div>
-                                  </div>
-                                ))}
-                            </div>
-                            <div className="dropdown-divider m-0"></div>
+                        {!isLogged?.is_staff && (
+                          <div className="dropdown  d-flex notifications slide">
                             <Link
-                              to=""
-                              className="dropdown-item text-center p-3 text-muted"
+                              className="nav-link icon side-menu__item notification-bell"
+                              data-bs-toggle="dropdown"
                             >
-                              View all Notification
+                              <i className="fe fe-bell"></i>
+                              {isLogged && notifications?.length > 0 && (
+                                <span className="pulse"></span>
+                              )}
                             </Link>
+
+                            <div className="dropdown-menu dropdown-menu-end dropdown-menu-arrow notification-dropdown">
+                              <div className="drop-heading border-bottom">
+                                <div className="d-flex">
+                                  <h6 className="mt-1 mb-0 fs-16 fw-semibold text-dark">
+                                    Notifications
+                                  </h6>
+                                </div>
+                              </div>
+                              <div className="notifications-menu">
+                                {notifications?.length > 0 &&
+                                  notifications?.map((notification) => (
+                                    <div
+                                      className="dropdown-item d-flex p-4"
+                                      key={notification._id}
+                                    >
+                                      <div className="me-2 notifyimg  bg-primary brround box-shadow-primary">
+                                        <i className={`fe fe-mail`}></i>
+                                      </div>
+                                      <div className="mt-1 wd-80p">
+                                        <h5 className="notification-label mb-1">
+                                          <Link
+                                            to={`/products/${notification._id}`}
+                                            className="mx-0 px-0"
+                                          >
+                                            {notification.title}
+                                          </Link>
+                                        </h5>
+                                        <span className="notification-subtext">
+                                          {notification.description}{" "}
+                                        </span>
+                                      </div>
+                                      <div className="ms-auto text-end d-flex">
+                                        <a
+                                          href="javascript:void(0)"
+                                          className="fs-16  p-0 "
+                                          onClick={() =>
+                                            handleDeleteNotification(
+                                              notification._id
+                                            )
+                                          }
+                                        >
+                                          <i
+                                            className="fe fe-trash-2 border brround d-block p-2 notification-trash"
+                                            style={{ color: "#007ea7" }}
+                                          ></i>
+                                        </a>
+                                      </div>
+                                    </div>
+                                  ))}
+                              </div>
+                              <div className="dropdown-divider m-0"></div>
+                              <Link
+                                to=""
+                                className="dropdown-item text-center p-3 text-muted"
+                              >
+                                View all Notification
+                              </Link>
+                            </div>
                           </div>
-                        </div>
+                        )}
                         <div
                           className="dropdown d-flex profile-1"
                           // style={{ paddingTop: "10px" }}
@@ -275,7 +291,7 @@ const Header = (props) => {
                           >
                             <img
                               src={
-                                isLogged
+                                isLogged && props?.user?.image
                                   ? process.env.REACT_APP_BASE_URL +
                                     props?.user?.image
                                   : process.env.PUBLIC_URL +
@@ -336,6 +352,17 @@ const mapStateToProps = (state) => {
   return {
     user: state.user.userData,
     carts: state?.cart?.cartsData,
+    notification: state?.notification?.notificationsData,
   };
 };
-export default connect(mapStateToProps)(Header);
+
+const mapDispatchToProps = (dispatch) => {
+  return {
+    getRequestToNotifications: (url, storedAuthToken) =>
+      dispatch(
+        actionCreators.getRequestToNotificationsDispatch(url, storedAuthToken)
+      ),
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Header);

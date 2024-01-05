@@ -21,16 +21,12 @@ const Register = (props) => {
   const postRequest = async ({ name, email, password, confirm_password }) => {
     setIsSubmitSuccessfull(true);
     setIsSuccessMessage(false);
-    console.log(
-      "name, email, password, confirm_password",
-      name,
-      email,
-      password,
-      confirm_password
-    );
+    setIsServerError("");
     if (!name || !email || !password || !confirm_password) {
-      setIsSubmitSuccessfull(false);
-      return;
+      setTimeout(() => {
+        setIsSubmitSuccessfull(false);
+        return;
+      }, 2000);
     }
     console.log("After", name, email, password, confirm_password);
 
@@ -60,12 +56,16 @@ const Register = (props) => {
           reset();
         }, 2000);
       } else {
-        setIsServerError(data?.message);
-        setIsSubmitSuccessfull(false);
+        setTimeout(() => {
+          setIsServerError(data?.message);
+          setIsSubmitSuccessfull(false);
+        }, 2000);
       }
     } catch (err) {
-      setIsSubmitSuccessfull(false);
-      setIsServerError(err);
+      setTimeout(() => {
+        setIsSubmitSuccessfull(false);
+        setIsServerError(err);
+      }, 2000);
     }
   };
 

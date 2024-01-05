@@ -1,13 +1,8 @@
 import React from "react";
-import { jwtDecode } from "jwt-decode";
-
-import { useMediaQuery } from "react-responsive";
 import AppLayout from "../components/applayout/AppLayout";
+import { connect } from "react-redux";
 
-const LandingPage = () => {
-  const isSmallScreen = useMediaQuery({
-    query: "(max-width: 991px)",
-  });
+const LandingPage = (props) => {
 
   return (
     <AppLayout>
@@ -80,4 +75,12 @@ const LandingPage = () => {
   );
 };
 
-export default LandingPage;
+
+const mapStateToProps = (state) => {
+  return {
+    products: state?.product?.productsData,
+    carts: state?.cart?.cartsData,
+    orders: state?.cart?.ordersData,
+  };
+};
+export default connect(mapStateToProps)(LandingPage);

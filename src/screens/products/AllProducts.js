@@ -7,7 +7,7 @@ import { Link, useNavigate } from "react-router-dom";
 import ReactPaginate from "react-paginate";
 import { connect } from "react-redux";
 import * as actionCreators from "../../store/actions/index";
-const itemsPerPage = 8;
+const itemsPerPage = 2;
 
 const AllProducts = (props) => {
   const [products, setProducts] = useState([]);
@@ -17,7 +17,7 @@ const AllProducts = (props) => {
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [searchBy, setSearchBy] = useState("");
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const [itemOffset, setItemOffset] = useState(0);
   const [endOffset, setEndOffset] = useState(itemsPerPage);
@@ -113,25 +113,12 @@ const AllProducts = (props) => {
         },
       });
       if (response?.status === 201 || response?.status === 200) {
-        // props.getRequestToProducts(`${BASE_URL}/products`);
-
         setTimeout(() => {
+          props.getRequestToProducts(`${BASE_URL}/products`);
           setLoadingStates((prevLoadingStates) => ({
             ...prevLoadingStates,
             [productId]: false,
           }));
-
-          const updatedProducts = products.filter(
-            (product) => product._id !== productId
-          );
-
-          setProducts(updatedProducts);
-          setFilteredProducts(updatedProducts);
-          // If the current page becomes empty after deletion, adjust the page offset
-          if (filteredProducts.length === 1 && itemOffset > 0) {
-            setItemOffset(itemOffset - itemsPerPage);
-            setEndOffset(itemOffset);
-          }
         }, 1000);
         // If the product was deleted successfully, update the state
       }
@@ -151,18 +138,7 @@ const AllProducts = (props) => {
     setItemOffset(newOffset);
     setEndOffset(Math.min(newOffset + itemsPerPage, filteredProducts.length));
   };
-
-  useEffect(() => {
-    // Update local state only if props.products has changed
-    if (props.products !== products) {
-      setProducts(props.products);
-      setFilteredProducts(props.products);
-      setItemOffset(0); // Reset page offset when products change
-    }
-  }, [props.products]);
-
-  useEffect(() => {
-    // Update filteredProducts whenever searchBy changes
+  const filterProducts = () => {
     if (searchBy) {
       setFilteredProducts(
         products.filter(
@@ -175,8 +151,69 @@ const AllProducts = (props) => {
     } else {
       setFilteredProducts([...products]);
     }
-    setItemOffset(0); // Reset page offset when filter changes
-  }, [searchBy, products]);
+  };
+  useEffect(() => {
+    // Update local state only if props.products has changed
+    if (props.products !== products) {
+      setProducts(props.products);
+      setFilteredProducts(props.products);
+    }
+  }, [props.products]);
+
+  useEffect(() => {
+    // Update filteredProducts whenever searchBy changes
+    filterProducts()
+
+    if (currentItems?.length === 0) {
+      if (itemOffset == 0) {
+        setItemOffset(0); // Reset page offset when products change
+        console.log("Here inside 0");
+      } else {
+        console.log("Here inside else");
+        const paginationUl = document.querySelector(".navigationUl");
+        const lastChild = paginationUl.lastChild;
+        lastChild.classList.add("disabled");
+        const secondLastChild = lastChild.previousSibling;
+        secondLastChild.classList.add("selected");
+        setItemOffset(itemOffset - 2);
+      }
+    } else {
+      // Assuming you have a reference to the parent element
+      const parentElement = document.querySelector(".navigationUl");
+
+      // Remove "selected" class from all li elements except the first one
+      parentElement
+        .querySelectorAll(".navigationUl li.selected")
+        .forEach((li, index) => {
+          if (index !== 0) {
+            li.classList.remove("selected");
+          }
+        });
+
+      const selectedIndex = Array.from(parentElement?.children).findIndex((li) =>
+        li.classList.contains("selected")
+      );
+
+      // Get all li elements after the selected one
+      const liElementsAfterSelected = Array.from(parentElement?.children).slice(
+        selectedIndex + 1
+      );
+      const lastLi = parentElement?.lastElementChild;
+
+      // Remove the "disabled" class from the last li if the length is greater than 2
+      if (liElementsAfterSelected?.length > 2) {
+        lastLi?.classList.remove("disabled");
+      } else if (parentElement.children.length === 3) {
+        parentElement?.firstElementChild.classList.add("disabled");
+        lastLi?.classList.add("disabled");
+      } else {
+        lastLi?.classList.add("disabled");
+      }
+      setItemOffset(itemOffset); // Reset page offset when products change
+    }
+    // setItemOffset(0); // Reset page offset when filter changes
+  }, [searchBy, products, itemOffset, endOffset]);
+
   return (
     <AppLayout>
       <div className="row products">
@@ -279,6 +316,7 @@ const AllProducts = (props) => {
         )}
       </div>
       <ReactPaginate
+        className="navigationUl"
         breakLabel="..."
         nextLabel="next"
         onPageChange={handlePageClick}

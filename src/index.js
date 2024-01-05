@@ -17,12 +17,13 @@ import user from "./store/reducers/user";
 import product from "./store/reducers/product";
 import cart from "./store/reducers/cart";
 import order from "./store/reducers/order";
+import notification from "./store/reducers/notification";
 
 // Import Web Vitals
 import reportWebVitals from "./reportWebVitals";
 
 // Combine reducers
-const rootReducers = combineReducers({ product,user,cart ,order});
+const rootReducers = combineReducers({ product,user,cart ,order, notification});
 
 // Redux DevTools Extension setup
 const composeEnhancer = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;

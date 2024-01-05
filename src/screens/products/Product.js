@@ -11,7 +11,7 @@ const Product = (props) => {
   const [status, setStatus] = useState(false);
   const [loadingStates, setLoadingStates] = useState({});
   const params = useParams();
-  const navigate= useNavigate()
+  const navigate = useNavigate();
 
   const storedAuthToken = localStorage.getItem("authToken");
   const isLogged = storedAuthToken ? jwtDecode(storedAuthToken) : null;
@@ -101,19 +101,13 @@ const Product = (props) => {
               <p className="product__description">{product?.description}</p>
             </div>
             <div className="card__actions">
-              {status ? (
+              {isLogged?.is_staff ? (
                 <>
                   <Link
                     to={`/add-product/${product._id}`}
                     className="btn btn-edit"
                   >
                     Edit
-                  </Link>
-                  <Link
-                    to={`/products/${product._id}`}
-                    className="btn btn-delete"
-                  >
-                    Delete
                   </Link>
                 </>
               ) : (
@@ -143,6 +137,8 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
   return {
+    getRequestToProducts: (url) =>
+      dispatch(actionCreators.getRequestToProductsDispatch(url)),
     getRequestToCarts: (url, storedAuthToken) =>
       dispatch(actionCreators.getRequestToCartsDispatch(url, storedAuthToken)),
   };

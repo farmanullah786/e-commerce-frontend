@@ -18,20 +18,17 @@ const AllGetRequest = (props) => {
   }, [isLogged]);
   useEffect(() => {
     // Dispatch the actions when the component mounts
-    props.getRequestToLoginUser(
-      `${BASE_URL}/login-user/${isLogged?.userId}`,
-      storedAuthToken
-    );
-    props.getRequestToCarts(
-      `${BASE_URL}/carts`,
-      storedAuthToken
-    );
-    props.getRequestToOders(
-      `${BASE_URL}/orders`,
-      storedAuthToken
-    );
+    if (isLogged) {
+      props.getRequestToLoginUser(`${BASE_URL}/login-user`, storedAuthToken);
+      props.getRequestToCarts(`${BASE_URL}/carts`, storedAuthToken);
+      props.getRequestToNotifications(
+        `${BASE_URL}/notifications`,
+        storedAuthToken
+      );
+      props.getRequestToOders(`${BASE_URL}/orders`, storedAuthToken);
+    }
     props.getRequestToProducts(`${BASE_URL}/products`);
-  }, [props.getRequestToCategories, props.getRequestToPrompts]);
+  }, []);
 
   return null; // or some JSX if needed
 };
@@ -42,10 +39,14 @@ const mapDispatchToProps = (dispatch) => {
       dispatch(actionCreators.getRequestToUserDispatch(url, storedAuthToken)),
     getRequestToProducts: (url) =>
       dispatch(actionCreators.getRequestToProductsDispatch(url)),
-    getRequestToCarts: (url,storedAuthToken) =>
-      dispatch(actionCreators.getRequestToCartsDispatch(url,storedAuthToken)),
-    getRequestToOders: (url,storedAuthToken) =>
-      dispatch(actionCreators.getRequestToOrdersDispatch(url,storedAuthToken)),
+    getRequestToCarts: (url, storedAuthToken) =>
+      dispatch(actionCreators.getRequestToCartsDispatch(url, storedAuthToken)),
+    getRequestToOders: (url, storedAuthToken) =>
+      dispatch(actionCreators.getRequestToOrdersDispatch(url, storedAuthToken)),
+    getRequestToNotifications: (url, storedAuthToken) =>
+      dispatch(
+        actionCreators.getRequestToNotificationsDispatch(url, storedAuthToken)
+      ),
   };
 };
 

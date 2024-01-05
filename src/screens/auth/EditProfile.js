@@ -75,10 +75,7 @@ const EditProfile = (props) => {
           setIsServerError(data?.message);
           setIsSuccessMessage(true);
           setIsSubmitSuccessfull(false);
-          props.getRequestToLoginUser(
-            `${baseUrl}/login-user/${isLogged?.userId}`,
-            storedAuthToken
-          );
+          props.getRequestToLoginUser(`${baseUrl}/login-user`, storedAuthToken);
           reset({ password: "", confirm_password: "", image: "" });
         }, 2000);
       } else {
@@ -128,7 +125,9 @@ const EditProfile = (props) => {
                   src={
                     imageFile
                       ? URL.createObjectURL(imageFile)
-                      : process.env.REACT_APP_BASE_URL + props?.user?.image
+                      : props?.user?.image
+                      ? process.env.REACT_APP_BASE_URL + props?.user?.image
+                      : process.env.PUBLIC_URL + "/assets/images/profile-1.jpeg"
                   }
                   alt={"No Image"}
                 />
